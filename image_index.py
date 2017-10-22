@@ -6,6 +6,7 @@ import sys
 import os
 import re
 import cPickle as pickle
+import fnmatch
 
 ########################
 # module: image_index.py
@@ -41,28 +42,51 @@ def index_img(imgp):
     except Exception, e:
         print(str(e))
 
-# compute the bgr vector for img saved in path imgp and
-# index it in BGR_INDEX under imgp.
+#TODO
+# img = images in directory
+# imgp = hash table (dictionary)
+
+# compute the bgr vector for img saved in path imgp and index it in BGR_INDEX under 
+# imgp.
 def index_bgr(imgp, img):
-    # your code
-    pass
+  (height, width, num_channels) = img.shape
+  B,G,R = cv2.split(img)
+  indexList = []
+  for b, g, r in zip(B,G,R):
+    bmu = sum(b)*1.0/len(b)    
+    gmu = sum(g)*1.0/len(g)
+    rmu = sum(g)*1.0/len(r)
+    indexList.append(bmu, gmu, rmu)
+  BGR_INDEX[imgp,indexList]
 
 # compute the hsv vector for img saved in path imgp and
 # index it in HSV_INDEX under imgp.
 def index_hsv(imgp, img):
-    # your code
-    pass
+  hsv_image = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+  H,S,V = cv2.split(hsv_image)
+  indexList = []
+  for h,s,v in zip(H,S,V):
+    hmu = sum(h)*1.0/len(h)
+    smu = sum(s)*1.0/len(s)
+    vmu = sum(v)*1.0/len(v)
+    indexList.append(hmu, smu, vmu)
+  HSV_INDEX[imgp, indexList]
 
-# compute the gsl vector for img saved in path imgp and
+# compute the grayscale vector for img saved in path imgp and
 # index it in GSL_INDEX under imgp.
 def index_gsl(imgp, img):
-  # your code
-  pass
+  gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+  GR = cv2.split(gray_image)
+  indexList = []
+  for gr in GR:
+    grmu = sum(gr)*1.0/len(gr)
+    indexList.append(grmu)
+  GSL_INDEX[imgp, indexList]
 
 # index image directory imgdir
 def index_img_dir(imgdir):
-  print(imgdir)
-  for imgp in generate_file_names(r'.+\.(jpg|png|JPG)', imgdir):
+ print(imgdir)
+ for imgp in generate_file_names(r'.+\.(jpg|png|JPG)', imgdir):
     print('indexing ' + imgp)
     index_img(imgp)
     print(imgp + ' indexed')
@@ -77,5 +101,4 @@ if __name__ == '__main__':
   with open(args['gsl'], 'wb') as gslfile:
     pickle.dump(GSL_INDEX, gslfile)
   print('indexing finished')
-    
 
